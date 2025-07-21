@@ -14,6 +14,7 @@ HapticHand left_hand;
 HapticHand right_hand;
 
 int freq = 65;
+float force = 0.0;
 
 void setup(){
   Serial.begin(115200);
@@ -22,32 +23,37 @@ void setup(){
 }
 
 void loop(){
-  left_hand.vibe_ms(1000, freq);
+  left_hand.actuate_bat(force);
   if (Serial.available()){
     char cmd = Serial.read();
     switch (cmd){
       case '1':
-        freq = 10;
+        force = 10;
         break;
-
+  
       case '2':
-        freq = 30;
+        force = 30;
         break;
 
       case '3':
-        freq = 65;
+        force = 65;
         break;
-
+  
       case '4':
-        freq = 100;
+        force = 70;
         break;
 
       case '5':
-        freq = 200;
+        force = 100;
         break;
 
       case 'e':
         left_hand.enable_vibe();
+        left_hand.enable_z();
+        break;
+
+      case 'r':
+        left_hand.reset();
         break;
 
       default:
@@ -55,4 +61,42 @@ void loop(){
         break;
     }
   }
+
+  // left_hand.rotate_x(180);
+  // delay(1000);
+  // left_hand.rotate_x(0);
+  // delay(1000);
+  // left_hand.vibe_ms(1000, freq);
+  // if (Serial.available()){
+  //   char cmd = Serial.read();
+  //   switch (cmd){
+  //     case '1':
+  //       freq = 10;
+  //       break;
+
+  //     case '2':
+  //       freq = 30;
+  //       break;
+
+  //     case '3':
+  //       freq = 65;
+  //       break;
+
+  //     case '4':
+  //       freq = 100;
+  //       break;
+
+  //     case '5':
+  //       freq = 200;
+  //       break;
+
+  //     case 'e':
+  //       left_hand.enable_vibe();
+  //       break;
+
+  //     default:
+  //       Serial.println("Unknown command");
+  //       break;
+  //   }
+  // }
 }

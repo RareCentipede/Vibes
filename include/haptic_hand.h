@@ -14,6 +14,8 @@ class HapticHand{
         unsigned long int start_time_ms_vibe = 0; // Start time for vibration
         unsigned long int start_time_ms_z = 0; // Start time for Z translation
         int time_ms = 0; // Duration for vibration in milliseconds
+        int ideal_freq = 65;
+        float max_force = 100;
 
         Servo servo_l;     // Servo object for controlling the servo motors
         Servo servo_r;     // Servo object for controlling the servo motors
@@ -39,6 +41,7 @@ class HapticHand{
         void rotate_x(float angle);
 
         void actuate_bat(float force);
+        void reset();
         // ~HapticHand();
   
     };

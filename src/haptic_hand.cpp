@@ -2,6 +2,10 @@
 #include <Servo.h>
 #include <Arduino.h>
 
+int compute_register_freq_value(int frequency) {
+    return 16000000 / (8 * frequency); // Assuming a 16MHz clock and prescaler of 8
+}
+
 HapticHand::HapticHand() {
     ;
 }
@@ -32,14 +36,14 @@ void HapticHand::init_vibe(int vibe_pin) {
             ICR1 = 0;
             OCR1B = 0;
             break;
-
+        
         case 2: // PE3, OC3B
             TCCR3A = _BV(COM3B1) | _BV(WGM31);
             TCCR3B = _BV(WGM33) | _BV(WGM32) | _BV(CS31); // Prescaler = 8
             ICR3 = 0;
             OCR3B = 0;
             break;
-
+        
         default:
             Serial.println("Invalid vibe pin. Use pin 12 (OC1B) or 2 (OC3B).");
             return;
@@ -47,66 +51,24 @@ void HapticHand::init_vibe(int vibe_pin) {
 
     vibrate = true;
 }
-
+    
 void HapticHand::disable_vibe(int vibe_pin){
     switch (vibe_pin){
         case 12: // PB6
             OCR1B = 0; // Disable Timer1
             break;
-
+        
         case 2: // PE3
             OCR3B = 0; // Disable Timer3
             break;
-
+        
         default:
             Serial.println("Invalid vibe pin specified. Use PB6 (pin 12) or PH6 (pin 9).");
             return;
     }
-
+    
     // digitalWrite(vibe_pin, LOW); // Turn off the vibration motor
     vibrate = false;
-}
-
-void HapticHand::translate_z(char direction){
-    Serial.println(direction);
-    switch (direction){
-        case 'u':
-            servo_l.write(180);
-            break;
-        case 'd':
-            servo_l.write(60);
-            break;
-        default:
-            Serial.println("Invalid direction for translate_z");
-            break;
-    }
-}
-
-void HapticHand::translate_z_ms(char direction, uint16_t duration_ms){
-    unsigned long now = millis();
-
-    if (!is_translating_z && do_translate_z) {
-        Serial.println("Starting translation in Z direction");
-        start_time_ms_z = now;
-
-        is_translating_z = true;
-        translate_z(direction);
-    }
-
-    if (is_translating_z && ((now - start_time_ms_z) >= duration_ms)) {
-        Serial.println("Stopping translation in Z direction");
-        Serial.println(start_time_ms_z);
-        Serial.println(now);
-        is_translating_z = false;
-        servo_l.write(90); // Reset servo position
-        do_translate_z = false; // Stop further translations
-        start_time_ms_z = 0;
-    }
-}
-
-void HapticHand::rotate_x(float angle){
-    // Assuming angle is in degrees and we map it to servo range
-    this->servo_r.write(angle); // Servo expects angle in degrees
 }
 
 void HapticHand::vibe(int frequency){
@@ -115,12 +77,12 @@ void HapticHand::vibe(int frequency){
             ICR1 = compute_register_freq_value(frequency); // Set frequency
             OCR1B = ICR1 * duty_cycle_percent; // Set duty cycle
             break;
-
+            
         case 2: // PE3
             ICR3 = compute_register_freq_value(frequency); // Set frequency
             OCR3B = ICR3 * duty_cycle_percent; // Set duty cycle
             break;
-
+            
         default:
             Serial.println("Invalid vibe pin specified. Use PB6 (pin 12) or PH6 (pin 9).");
             return;
@@ -129,14 +91,14 @@ void HapticHand::vibe(int frequency){
 
 void HapticHand::vibe_ms(uint16_t duration_ms, int frequency) {
     unsigned long now = millis();
-
+    
     if (!is_vibrating && vibrate) {
         Serial.println("Starting vibration");
         start_time_ms_vibe = now;
         is_vibrating = true;
         vibe(frequency);
     }
-
+    
     if (is_vibrating && ((now - start_time_ms_vibe) >= duration_ms)) {
         Serial.println("Stopping vibration");
         Serial.println(start_time_ms_vibe);
@@ -152,10 +114,72 @@ void HapticHand::enable_vibe() {
     vibrate = true;
 }
 
+void HapticHand::translate_z(char direction){
+    Serial.println(direction);
+    switch (direction){
+        case 'u':
+            servo_l.write(180);
+            break;
+
+        case 'd':
+            servo_l.write(60);
+            break;
+
+        default:
+            Serial.println("Invalid direction for translate_z");
+            break;
+        }
+    }
+    
+void HapticHand::translate_z_ms(char direction, uint16_t duration_ms){
+    unsigned long now = millis();
+    
+    if (!is_translating_z && do_translate_z) {
+        Serial.println("Starting translation in Z direction");
+        start_time_ms_z = now;
+
+        is_translating_z = true;
+        translate_z(direction);
+    }
+
+    if (is_translating_z && ((now - start_time_ms_z) >= duration_ms)) {
+        Serial.println("Stopping translation in Z direction");
+        Serial.println(start_time_ms_z);
+        Serial.println(now);
+        is_translating_z = false;
+        servo_l.write(90); // Reset servo position
+        do_translate_z = false; // Stop further translations
+    start_time_ms_z = 0;
+    }
+}
+
+void HapticHand::rotate_x(float angle){
+    // Assuming angle is in degrees and we map it to servo range
+    this->servo_r.write(angle); // Servo expects angle in degrees
+}
+
 void HapticHand::enable_z(){
     do_translate_z = true;
 }
 
-int compute_register_freq_value(int frequency) {
-    return 16000000 / (8 * frequency); // Assuming a 16MHz clock and prescaler of 8
+void HapticHand::actuate_bat(float force){
+    int freq = int(ideal_freq * (max_force / force));
+    float lin_servo_spd = 180 * (force / max_force); // Map force to servo speed
+    float rot_servo_spd = 180 * (force / max_force); // Map force to servo speed
+
+    vibe_ms(1000, freq);
+    translate_z_ms('u', 1000); // Move up for 1 second
+    rotate_x(rot_servo_spd); // Rotate the right servo based on force
+}
+
+void HapticHand::reset() {
+    // Reset all states
+    is_vibrating = false;
+    is_translating_z = false;
+    vibrate = false;
+    do_translate_z = true;
+
+    // Reset servos to neutral position
+    servo_l.write(90); // Neutral position for left servo
+    servo_r.write(90); // Neutral position for right servo
 }
