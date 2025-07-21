@@ -21,7 +21,7 @@ void HapticHand::initialize_hand(int servo_pin_1, int servo_pin_2, int vibe_pin)
     this->init_vibe(vibe_pin);
 }
 
-void HapticHand::init_vibe(int vibe_pin, int frequency){
+void HapticHand::init_vibe(int vibe_pin) {
     this->vibe_pin = vibe_pin;
     pinMode(vibe_pin, OUTPUT);
 
@@ -29,14 +29,14 @@ void HapticHand::init_vibe(int vibe_pin, int frequency){
         case 12: // PB6, OC1B
             TCCR1A = _BV(COM1B1) | _BV(WGM11);
             TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11); // Prescaler = 8
-            ICR1 = 16000000 / (8 * frequency);
+            ICR1 = 0;
             OCR1B = 0;
             break;
 
         case 2: // PE3, OC3B
             TCCR3A = _BV(COM3B1) | _BV(WGM31);
             TCCR3B = _BV(WGM33) | _BV(WGM32) | _BV(CS31); // Prescaler = 8
-            ICR3 = 16000000 / (8 * frequency);
+            ICR3 = 0;
             OCR3B = 0;
             break;
 
@@ -109,13 +109,15 @@ void HapticHand::rotate_x(float angle){
     this->servo_r.write(angle); // Servo expects angle in degrees
 }
 
-void HapticHand::vibe(float duty_cycle_percent){
+void HapticHand::vibe(int frequency){
     switch (vibe_pin){
         case 12: // PB6
+            ICR1 = compute_register_freq_value(frequency); // Set frequency
             OCR1B = ICR1 * duty_cycle_percent; // Set duty cycle
             break;
 
         case 2: // PE3
+            ICR3 = compute_register_freq_value(frequency); // Set frequency
             OCR3B = ICR3 * duty_cycle_percent; // Set duty cycle
             break;
 
@@ -125,14 +127,14 @@ void HapticHand::vibe(float duty_cycle_percent){
     }
 }
 
-void HapticHand::vibe_ms(uint16_t duration_ms, float duty_cycle_percent){
+void HapticHand::vibe_ms(uint16_t duration_ms, int frequency) {
     unsigned long now = millis();
 
     if (!is_vibrating && vibrate) {
         Serial.println("Starting vibration");
         start_time_ms_vibe = now;
         is_vibrating = true;
-        vibe(duty_cycle_percent);
+        vibe(frequency);
     }
 
     if (is_vibrating && ((now - start_time_ms_vibe) >= duration_ms)) {
@@ -152,4 +154,8 @@ void HapticHand::enable_vibe() {
 
 void HapticHand::enable_z(){
     do_translate_z = true;
+}
+
+int compute_register_freq_value(int frequency) {
+    return 16000000 / (8 * frequency); // Assuming a 16MHz clock and prescaler of 8
 }

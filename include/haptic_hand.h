@@ -3,6 +3,8 @@
 
 #include <servo.h>
 
+int compute_register_freq_value(int frequency);
+
 class HapticHand{
     private:
         int servo_pin_1; // Pin for the first servo
@@ -15,7 +17,7 @@ class HapticHand{
 
         Servo servo_l;     // Servo object for controlling the servo motors
         Servo servo_r;     // Servo object for controlling the servo motors
-        
+
     public:
         bool vibrate = false;
         bool is_vibrating = false; // Flag to check if vibration is active
@@ -23,18 +25,22 @@ class HapticHand{
         bool is_translating_z = false;
 
         HapticHand();
-        void init_vibe(int vibe_pin, int frequency = 65);
-        void enable_vibe();
-        void disable_vibe(int vibe_pin);
         void initialize_hand(int servo_pin_1, int servo_pin_2, int vibe_pin);
+        void init_vibe(int vibe_pin);
+        void enable_vibe();
+        void vibe(int frequency);
+        void vibe_ms(uint16_t duration_ms, int frequency);
+        void disable_vibe(int vibe_pin);
+
         void translate_z(char direction);
         void translate_z_ms(char direction, uint16_t duration_ms);
         void enable_z();
+
         void rotate_x(float angle);
-        void vibe(float duty_cycle_percent = 0.5);
-        void vibe_ms(uint16_t duration_ms, float duty_cycle_percent = 0.5);
+
+        void actuate_bat(float force);
         // ~HapticHand();
-        
+  
     };
 
 #endif
