@@ -27,6 +27,10 @@ void loop(){
   if (Serial.available()){
     char cmd = Serial.read();
     switch (cmd){
+      case '0':
+        force = 0.0;
+        break;
+
       case '1':
         force = 10;
         break;
@@ -61,42 +65,4 @@ void loop(){
         break;
     }
   }
-
-  // left_hand.rotate_x(180);
-  // delay(1000);
-  // left_hand.rotate_x(0);
-  // delay(1000);
-  // left_hand.vibe_ms(1000, freq);
-  // if (Serial.available()){
-  //   char cmd = Serial.read();
-  //   switch (cmd){
-  //     case '1':
-  //       freq = 10;
-  //       break;
-
-  //     case '2':
-  //       freq = 30;
-  //       break;
-
-  //     case '3':
-  //       freq = 65;
-  //       break;
-
-  //     case '4':
-  //       freq = 100;
-  //       break;
-
-  //     case '5':
-  //       freq = 200;
-  //       break;
-
-  //     case 'e':
-  //       left_hand.enable_vibe();
-  //       break;
-
-  //     default:
-  //       Serial.println("Unknown command");
-  //       break;
-  //   }
-  // }
 }

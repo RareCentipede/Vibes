@@ -163,13 +163,21 @@ void HapticHand::enable_z(){
 }
 
 void HapticHand::actuate_bat(float force){
-    int freq = int(ideal_freq * (max_force / force));
+    float force_factor = 0.0;
+    if (force != 0.0){
+        force_factor = max_force / force;
+    }
+    int freq = int(ideal_freq * force_factor);
+
     float lin_servo_spd = 180 * (force / max_force); // Map force to servo speed
     float rot_servo_spd = 180 * (force / max_force); // Map force to servo speed
 
     vibe_ms(1000, freq);
-    translate_z_ms('u', 1000); // Move up for 1 second
-    rotate_x(rot_servo_spd); // Rotate the right servo based on force
+    if (do_translate_z){
+        this->servo_l.write(lin_servo_spd); // Set linear servo speed
+        this->servo_r.write(rot_servo_spd); // Set rotational servo speed
+        do_translate_z = false; // Stop further translations
+    }
 }
 
 void HapticHand::reset() {
@@ -177,9 +185,9 @@ void HapticHand::reset() {
     is_vibrating = false;
     is_translating_z = false;
     vibrate = false;
-    do_translate_z = true;
-
+    do_translate_z = false;
+    Serial.println("Resetting Haptic Hand");
     // Reset servos to neutral position
-    servo_l.write(90); // Neutral position for left servo
-    servo_r.write(90); // Neutral position for right servo
+    this->servo_l.write(0); // Neutral position for left servo
+    this->servo_r.write(0); // Neutral position for right servo
 }

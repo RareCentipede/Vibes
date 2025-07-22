@@ -16,14 +16,13 @@ class HapticHand{
         int time_ms = 0; // Duration for vibration in milliseconds
         int ideal_freq = 65;
         float max_force = 100;
-
+    
+    public:
         Servo servo_l;     // Servo object for controlling the servo motors
         Servo servo_r;     // Servo object for controlling the servo motors
-
-    public:
         bool vibrate = false;
         bool is_vibrating = false; // Flag to check if vibration is active
-        bool do_translate_z = true;
+        bool do_translate_z = false;
         bool is_translating_z = false;
 
         HapticHand();
@@ -43,7 +42,6 @@ class HapticHand{
         void actuate_bat(float force);
         void reset();
         // ~HapticHand();
-  
     };
 
 #endif
