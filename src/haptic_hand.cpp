@@ -3,6 +3,9 @@
 #include <Arduino.h>
 
 int compute_register_freq_value(int frequency) {
+    if (frequency == 0){
+        return 0;
+    }
     return 16000000 / (8 * frequency); // Assuming a 16MHz clock and prescaler of 8
 }
 
@@ -55,11 +58,11 @@ void HapticHand::init_vibe(int vibe_pin) {
 void HapticHand::disable_vibe(int vibe_pin){
     switch (vibe_pin){
         case 12: // PB6
-            OCR1B = 0; // Disable Timer1
+            ICR1 = 0;
             break;
         
         case 2: // PE3
-            OCR3B = 0; // Disable Timer3
+            ICR3 = 0;
             break;
         
         default:
@@ -72,17 +75,18 @@ void HapticHand::disable_vibe(int vibe_pin){
 }
 
 void HapticHand::vibe(int frequency){
+    Serial.println(frequency);
     switch (vibe_pin){
         case 12: // PB6
             ICR1 = compute_register_freq_value(frequency); // Set frequency
             OCR1B = ICR1 * duty_cycle_percent; // Set duty cycle
             break;
-            
+
         case 2: // PE3
             ICR3 = compute_register_freq_value(frequency); // Set frequency
             OCR3B = ICR3 * duty_cycle_percent; // Set duty cycle
             break;
-            
+
         default:
             Serial.println("Invalid vibe pin specified. Use PB6 (pin 12) or PH6 (pin 9).");
             return;
@@ -169,8 +173,8 @@ void HapticHand::actuate_bat(float force){
     }
     int freq = int(ideal_freq * force_factor);
 
-    float lin_servo_spd = 180 * (force / max_force); // Map force to servo speed
-    float rot_servo_spd = 180 * (force / max_force); // Map force to servo speed
+    float lin_servo_spd = 180 * force / max_force; // Map force to servo speed
+    float rot_servo_spd = 180 * force / max_force; // Map force to servo speed
 
     vibe_ms(1000, freq);
     if (do_translate_z){
@@ -188,6 +192,6 @@ void HapticHand::reset() {
     do_translate_z = false;
     Serial.println("Resetting Haptic Hand");
     // Reset servos to neutral position
-    this->servo_l.write(0); // Neutral position for left servo
-    this->servo_r.write(0); // Neutral position for right servo
+    this->servo_l.write(90); // Neutral position for left servo
+    this->servo_r.write(90); // Neutral position for right servo
 }

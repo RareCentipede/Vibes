@@ -16,7 +16,7 @@ class HapticHand{
         int time_ms = 0; // Duration for vibration in milliseconds
         int ideal_freq = 65;
         float max_force = 100;
-    
+
     public:
         Servo servo_l;     // Servo object for controlling the servo motors
         Servo servo_r;     // Servo object for controlling the servo motors
