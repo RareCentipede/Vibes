@@ -33,11 +33,7 @@ class HapticHand{
         void vibe_ms(uint16_t duration_ms, int frequency);
         void disable_vibe(int vibe_pin);
 
-        void translate_z(char direction);
-        void translate_z_ms(char direction, uint16_t duration_ms);
         void enable_z();
-
-        void rotate_x(float angle);
 
         void actuate_bat(float force);
         void reset();

@@ -118,50 +118,6 @@ void HapticHand::enable_vibe() {
     vibrate = true;
 }
 
-void HapticHand::translate_z(char direction){
-    Serial.println(direction);
-    switch (direction){
-        case 'u':
-            servo_l.write(180);
-            break;
-
-        case 'd':
-            servo_l.write(60);
-            break;
-
-        default:
-            Serial.println("Invalid direction for translate_z");
-            break;
-        }
-    }
-    
-void HapticHand::translate_z_ms(char direction, uint16_t duration_ms){
-    unsigned long now = millis();
-    
-    if (!is_translating_z && do_translate_z) {
-        Serial.println("Starting translation in Z direction");
-        start_time_ms_z = now;
-
-        is_translating_z = true;
-        translate_z(direction);
-    }
-
-    if (is_translating_z && ((now - start_time_ms_z) >= duration_ms)) {
-        Serial.println("Stopping translation in Z direction");
-        Serial.println(start_time_ms_z);
-        Serial.println(now);
-        is_translating_z = false;
-        servo_l.write(90); // Reset servo position
-        do_translate_z = false; // Stop further translations
-    start_time_ms_z = 0;
-    }
-}
-
-void HapticHand::rotate_x(float angle){
-    // Assuming angle is in degrees and we map it to servo range
-    this->servo_r.write(angle); // Servo expects angle in degrees
-}
-
 void HapticHand::enable_z(){
     do_translate_z = true;
 }
@@ -176,7 +132,7 @@ void HapticHand::actuate_bat(float force){
     float lin_servo_spd = 180 * force / max_force; // Map force to servo speed
     float rot_servo_spd = 180 * force / max_force; // Map force to servo speed
 
-    vibe_ms(1000, freq);
+    vibe_ms(300, freq);
     if (do_translate_z){
         this->servo_l.write(lin_servo_spd); // Set linear servo speed
         this->servo_r.write(rot_servo_spd); // Set rotational servo speed

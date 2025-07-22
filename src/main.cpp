@@ -2,12 +2,12 @@
 #include <servo.h>
 #include "../include/haptic_hand.h"
 
-int left_hand_servo_linear = 2;
+int left_hand_servo_linear = 10;
 int left_hand_servo_rotational = 3;
 int left_hand_vibe = 12;
 
-int right_hand_servo_linear = 25;
-int right_hand_servo_rotational = 26;
+int right_hand_servo_linear = 4;
+int right_hand_servo_rotational = 5;
 int right_hand_vibe = 2;
 
 HapticHand left_hand;
@@ -24,6 +24,7 @@ void setup(){
 
 void loop(){
   left_hand.actuate_bat(force);
+  right_hand.actuate_bat(force);
   if (Serial.available()){
     char cmd = Serial.read();
     switch (cmd){
@@ -54,10 +55,13 @@ void loop(){
       case 'e':
         left_hand.enable_vibe();
         left_hand.enable_z();
+        right_hand.enable_vibe();
+        right_hand.enable_z();
         break;
 
       case 'r':
         left_hand.reset();
+        right_hand.reset();
         break;
 
       default:
